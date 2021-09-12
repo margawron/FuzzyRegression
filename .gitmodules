@@ -1,0 +1,3 @@
+[submodule "neuro-fuzzy-library"]
+	path = neuro-fuzzy-library
+	url = https://github.com/ksiminski/neuro-fuzzy-library.git
