@@ -4,6 +4,7 @@
 #include "LinearRegressionDataGenerator.hpp"
 
 #include <fstream>
+#include <filesystem>
 
 class TupleWriter{
 private:
@@ -13,7 +14,7 @@ public:
     TupleWriter(LinearRegressionDataGenerator& dataGenerator,
                 unsigned int numberOfValuesToGenerate) noexcept;
 
-    void generateTuplesAndSaveWithFilename(const std::string&& outputFilename);
+    void generateTuplesAndSaveWithFilename(const std::filesystem::path&& outputPath);
 };
 
 

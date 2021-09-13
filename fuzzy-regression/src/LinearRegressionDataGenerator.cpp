@@ -5,7 +5,7 @@ LinearRegressionDataGenerator::LinearRegressionDataGenerator(const std::vector<d
                                                              double interceptDeviation,
                                                              double domainMaxValue)
         : slopeParameters(slopeParameters),
-          mersenneTwisterGenerator(std::mt19937()),
+          mersenneTwisterGenerator(std::mt19937(std::random_device()())),
           uniformRealDistributionForIntercept(std::uniform_real_distribution<double>(-interceptDeviation, interceptDeviation)),
           uniformRealDistributionsForDeviation(generateDistributionsForSlopeDeviations(slopeDeviations)),
           uniformRealDistributionForDomain(std::uniform_real_distribution<double>(0, domainMaxValue)){

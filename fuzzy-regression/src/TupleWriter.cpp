@@ -8,8 +8,8 @@ TupleWriter::TupleWriter(LinearRegressionDataGenerator& dataGenerator,
                          : dataGenerator(dataGenerator),
                          numberOfValuesToGenerate(numberOfValuesToGenerate){}
 
-void TupleWriter::generateTuplesAndSaveWithFilename(const std::string&& outputFilename) {
-    std::ofstream outputFile(outputFilename);
+void TupleWriter::generateTuplesAndSaveWithFilename(const std::filesystem::path&& outputPath) {
+    std::ofstream outputFile(outputPath);
     if (!outputFile.is_open()){
         std::cout << "File was not opened correctly";
         throw "File was not opened correctly";
