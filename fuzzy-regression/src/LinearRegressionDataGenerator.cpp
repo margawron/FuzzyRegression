@@ -24,12 +24,17 @@ LinearRegressionDataGenerator::generateDistributionsForSlopeDeviations(const std
 }
 
 std::vector<double> LinearRegressionDataGenerator::generateTupleValue() {
-    std::vector<double> returnValue(slopeParameters.size());
-    double domainValue = uniformRealDistributionForDomain(mersenneTwisterGenerator);
-    for(int i = 0; i < slopeParameters.size(); ++i){
+    unsigned long describingValueAmount = slopeParameters.size();
+    std::vector<double> describingAndDescribedParameters(describingValueAmount + 1);
+    double describedValue = 0;
+    for (int i = 0; i < describingValueAmount; ++i) {
+        double x = uniformRealDistributionForDomain(mersenneTwisterGenerator);
         auto distribution = uniformRealDistributionsForDeviation[i];
-        returnValue[i] = (slopeParameters[i] * domainValue) + distribution(mersenneTwisterGenerator);
-        returnValue[i] += uniformRealDistributionForIntercept(mersenneTwisterGenerator);
+        double ithDescribingParameterValue = (slopeParameters[i] * x) + distribution(mersenneTwisterGenerator);
+        describedValue += ithDescribingParameterValue;
+        describingAndDescribedParameters[i] = x;
     }
-    return returnValue;
+    describedValue += uniformRealDistributionForIntercept(mersenneTwisterGenerator);
+    describingAndDescribedParameters[describingValueAmount] = describedValue;
+    return describingAndDescribedParameters;
 }
