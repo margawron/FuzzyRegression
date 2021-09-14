@@ -46,26 +46,59 @@ int Program::runMainProgram() {
 }
 
 void Program::generateTestData() {
-    auto generatorForFiveDimensionalData = LinearRegressionDataGenerator(
-            std::vector<double>(std::initializer_list<double> {5.0, 3.0, 4.0, 5.0, 3.0}),
-            std::vector<double>(std::initializer_list<double> {0.001, 0.003, 0.004, 0.005, 0.003}),
-            2.0,
-            1000.0);
-
-    auto tupleWriter = TupleWriter(generatorForFiveDimensionalData, 1000);
     std::filesystem::path dataPath("data");
-    if (!std::filesystem::exists(dataPath)){
+    if (!std::filesystem::exists(dataPath)) {
         std::filesystem::create_directories(dataPath);
     }
-    tupleWriter.generateTuplesAndSaveWithFilename(
-            dataPath/"test1.txt"
-    );
-    tupleWriter.generateTuplesAndSaveWithFilename(
-            dataPath/"test2.txt"
-    );
-    tupleWriter.generateTuplesAndSaveWithFilename(
-            dataPath/"test3.txt"
-    );
+    {
+        auto generatorForFiveDescriptionVariables = LinearRegressionDataGenerator(
+                std::vector<double>(std::initializer_list<double>{5.0, 3.0, 4.0, 5.0, 3.0}),
+                std::vector<double>(std::initializer_list<double>{0.001, 0.003, 0.004, 0.005, 0.003}),
+                2.0,
+                1000.0);
+
+        auto tupleWriter = TupleWriter(generatorForFiveDescriptionVariables, 1000);
+        tupleWriter.generateTuplesAndSaveWithFilename(
+                dataPath / "fiveDescriptionVariables.txt"
+        );
+    }
+    {
+        auto generatorForTenDescriptionVariables = LinearRegressionDataGenerator(
+                std::vector<double>(std::initializer_list<double>{5.0, -23.0, 4.0, -8.0, 3.0, 53.1, 0.2, -1337.3, 90.0, 123.0}),
+                std::vector<double>(std::initializer_list<double>{0.001, 0.003, 0.004, 0.005, 0.003, 0.001, 0.001, 0.001, 0.001, 0.001}),
+                2.0,
+                1000.0);
+
+        auto tupleWriter = TupleWriter(generatorForTenDescriptionVariables, 1000);
+        tupleWriter.generateTuplesAndSaveWithFilename(
+                dataPath/"tenDescriptionVariables.txt"
+        );
+    }
+    {
+        auto generatorForTwoDescriptionVariables = LinearRegressionDataGenerator(
+                std::vector<double>(std::initializer_list<double>{0.2, -1337.3}),
+                std::vector<double>(std::initializer_list<double>{0.001, 0.003}),
+                2.0,
+                1000.0);
+
+        auto tupleWriter = TupleWriter(generatorForTwoDescriptionVariables, 400);
+        tupleWriter.generateTuplesAndSaveWithFilename(
+                dataPath/"twoDescriptionVariables.txt"
+        );
+    }
+    {
+        auto generatorForFourDescriptionVariables = LinearRegressionDataGenerator(
+                std::vector<double>(std::initializer_list<double>{3.0, 53.1, 90.0, 123.0}),
+                std::vector<double>(std::initializer_list<double>{0.001, 0.003, 0.004, 0.005}),
+                2.0,
+                1000.0);
+
+        auto tupleWriter = TupleWriter(generatorForFourDescriptionVariables, 300);
+        tupleWriter.generateTuplesAndSaveWithFilename(
+                dataPath/"fourDescriptionVariables.txt"
+        );
+    }
+
 }
 
 void Program::processData() {
@@ -157,7 +190,7 @@ void Program::printRegressionDataHeader(std::fstream& outputFile, unsigned long 
     for (int i = 0; i < numberOfAttributes-1; ++i) {
         outputFile << "X" << i+1 << ";";
     }
-    outputFile << "R-Squared" << "\n";
+    outputFile << "Regression Error" << "\n";
 }
 
 void Program::printRegressionData(std::fstream& outputFile,

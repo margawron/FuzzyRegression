@@ -50,9 +50,9 @@ private:
 
     [[nodiscard]]
     double
-    calculateRSquaredError(const std::vector<std::vector<double>>& rowsWithDescribingValues,
-                           const std::vector<double>& describedValues,
-                           const std::vector<double>& regressionCoefficients);
+    calculateRegressionError(const std::vector<std::vector<double>>& rowsWithDescribingValues,
+                             const std::vector<double>& describedValues,
+                             const std::vector<double>& regressionCoefficients);
 };
 
 

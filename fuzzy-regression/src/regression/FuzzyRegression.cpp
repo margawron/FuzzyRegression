@@ -39,12 +39,13 @@ FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
     performanceLoggingStream << fuzzyRegressionNanosecondDuration << ";";
 
     auto rSquaredErrorStart = std::chrono::steady_clock::now();
-    double coefficientOfDetermination = calculateRSquaredError(clusterDescribingValues, clusterDescribedValues, fuzzyRegressionCoefficients);
+    double regressionError = calculateRegressionError(clusterDescribingValues, clusterDescribedValues,
+                                                      fuzzyRegressionCoefficients);
     auto rSquaredErrorEnd = std::chrono::steady_clock::now();
     long rSquaredNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fuzzyRegressionEnd - fuzzyRegressionStart).count();
     performanceLoggingStream << rSquaredNanosecondDuration << "\n";
 
-    return RegressionResult{fuzzyRegressionCoefficients, coefficientOfDetermination};
+    return RegressionResult{fuzzyRegressionCoefficients, regressionError};
 }
 
 std::vector<std::vector<double>>
@@ -119,12 +120,12 @@ FuzzyRegression::getPartitionAssociativityData(const std::vector<std::vector<dou
     return datumClusterAssociationInfo;
 }
 
-double FuzzyRegression::calculateRSquaredError(const std::vector<std::vector<double>>& rowsWithDescribingValues,
-                                               const std::vector<double>& describedValues,
-                                               const std::vector<double>& regressionCoefficients) {
-    double averageOfDescribedValues = std::accumulate(describedValues.begin(), describedValues.end(), 0.0)/(double) describedValues.size();
+double FuzzyRegression::calculateRegressionError(const std::vector<std::vector<double>>& rowsWithDescribingValues,
+                                                 const std::vector<double>& describedValues,
+                                                 const std::vector<double>& regressionCoefficients) {
+//    double averageOfDescribedValues = std::accumulate(describedValues.begin(), describedValues.end(), 0.0)/(double) describedValues.size();
     double sumOfLineErrors = 0;
-    double sumOfAvgErrors = 0;
+//    double sumOfAvgErrors = 0;
     for (int i = 0; i < describedValues.size(); ++i) {
         const auto& describingValues = rowsWithDescribingValues[i];
         double predictedValue = 0;
@@ -133,11 +134,12 @@ double FuzzyRegression::calculateRSquaredError(const std::vector<std::vector<dou
         }
         double sqrdLineError = (describedValues[i] - predictedValue) *
                                (describedValues[i] - predictedValue);
-        double sqrdAvgError = (describedValues[i] - averageOfDescribedValues) *
-                              (describedValues[i] - averageOfDescribedValues);
+//        double sqrdAvgError = (describedValues[i] - averageOfDescribedValues) *
+//                              (describedValues[i] - averageOfDescribedValues);
         sumOfLineErrors += sqrdLineError;
-        sumOfAvgErrors += sqrdAvgError;
+//        sumOfAvgErrors += sqrdAvgError;
     }
-    double d = sumOfLineErrors / sumOfAvgErrors ;
-    return 1 - d;
+//    double d = sumOfLineErrors / sumOfAvgErrors ;
+//    return 1 - d;
+    return sumOfLineErrors / (double)describedValues.size();
 }
