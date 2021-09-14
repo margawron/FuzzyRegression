@@ -7,7 +7,7 @@ FuzzyRegression::FuzzyRegression(const ksi::dataset& dataset, int numberOfCluste
 numberOfClusters(numberOfClusters),
 epsilon(epsilon){}
 
-std::vector<double>
+RegressionResult
 FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
     performanceLoggingStream << "\n" << "Starting FCM for " << dataset.getNumberOfData()
                              << " values with " << dataset.getNumberOfAttributes()
@@ -32,13 +32,19 @@ FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
     performanceLoggingStream << "Data preparation took " << dataPrepNanosecondDuration << " nanoseconds to complete\n";
 
     auto fuzzyRegressionStart = std::chrono::steady_clock::now();
-    const std::vector<double>& fuzzyWeightedLinearRegressionResults = ksi::least_square_error_regression::weighted_linear_regression(
+    const std::vector<double>& fuzzyRegressionCoefficients = ksi::least_square_error_regression::weighted_linear_regression(
             clusterDescribingValues, clusterDescribedValues, clusterWeights);
     auto fuzzyRegressionEnd = std::chrono::steady_clock::now();
     long fuzzyRegressionNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fuzzyRegressionEnd- fuzzyRegressionStart).count();
     performanceLoggingStream << "Regression took " << fuzzyRegressionNanosecondDuration << " nanoseconds to complete\n";
 
-    return fuzzyWeightedLinearRegressionResults;
+    auto rSquaredErrorStart = std::chrono::steady_clock::now();
+    double coefficientOfDetermination = calculateRSquaredError(clusterDescribingValues, clusterDescribedValues, fuzzyRegressionCoefficients);
+    auto rSquaredErrorEnd = std::chrono::steady_clock::now();
+    long rSquaredNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fuzzyRegressionEnd - fuzzyRegressionStart).count();
+    performanceLoggingStream << "Calculation of error took " << rSquaredNanosecondDuration << " nanoseconds to complete\n";
+
+    return RegressionResult{fuzzyRegressionCoefficients, coefficientOfDetermination};
 }
 
 std::vector<std::vector<double>>
@@ -111,4 +117,27 @@ FuzzyRegression::getPartitionAssociativityData(const std::vector<std::vector<dou
         }
     }
     return datumClusterAssociationInfo;
+}
+
+double FuzzyRegression::calculateRSquaredError(const std::vector<std::vector<double>>& rowsWithDescribingValues,
+                                               const std::vector<double>& describedValues,
+                                               const std::vector<double>& regressionCoefficients) {
+    double averageOfDescribedValues = std::accumulate(describedValues.begin(), describedValues.end(), 0.0)/(double) describedValues.size();
+    double sumOfLineErrors = 0;
+    double sumOfAvgErrors = 0;
+    for (int i = 0; i < describedValues.size(); ++i) {
+        const auto& describingValues = rowsWithDescribingValues[i];
+        double predictedValue = 0;
+        for (int j = 0; j < describingValues.size(); ++j) {
+            predictedValue += regressionCoefficients[j] * describingValues[j];
+        }
+        double sqrdLineError = (describedValues[i] - predictedValue) *
+                               (describedValues[i] - predictedValue);
+        double sqrdAvgError = (describedValues[i] - averageOfDescribedValues) *
+                              (describedValues[i] - averageOfDescribedValues);
+        sumOfLineErrors += sqrdLineError;
+        sumOfAvgErrors += sqrdAvgError;
+    }
+    double d = sumOfLineErrors / sumOfAvgErrors ;
+    return 1 - d;
 }

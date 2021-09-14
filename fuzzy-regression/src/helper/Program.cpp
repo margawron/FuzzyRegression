@@ -130,9 +130,12 @@ void Program::processSingleFile(const std::filesystem::directory_entry& testData
             return;
         }
         regressionResultOutputFile << "Got following results for regression with " << clusterSizeForIteration << " clusters\n";
-        for (int i = 0; i < regressionResults.size(); ++i) {
-            regressionResultOutputFile << "x" << i+1 << " = " << regressionResults[i] << " ";
+        auto regressionCoefficients = regressionResults.regressionDescribingParameters;
+        for (int i = 0; i < regressionCoefficients.size(); ++i) {
+            regressionResultOutputFile << "x" << i+1 << " = " << regressionCoefficients[i] << " ";
         }
+        regressionResultOutputFile << "\n";
+        regressionResultOutputFile << "R-squared error: " << regressionResults.coefficientOfDetermination;
         regressionResultOutputFile.close();
     }
     performanceFile.close();

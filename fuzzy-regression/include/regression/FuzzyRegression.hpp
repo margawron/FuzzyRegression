@@ -13,6 +13,11 @@ struct AssociationStruct{
     double clusterAssociationValue;
 };
 
+struct RegressionResult{
+    const std::vector<double> regressionDescribingParameters;
+    const double coefficientOfDetermination;
+};
+
 class FuzzyRegression{
     constexpr static const double EPSILON_DEFAULT_VALUE = 1e-8;
 private:
@@ -24,7 +29,7 @@ public:
                     int numberOfClusters,
                     double epsilon = EPSILON_DEFAULT_VALUE);
 
-    std::vector<double> processDataset(std::ostream& performanceLoggingStream);
+    RegressionResult processDataset(std::ostream& performanceLoggingStream);
 
 private:
     [[nodiscard]]
@@ -42,6 +47,12 @@ private:
     [[nodiscard]]
     std::vector<std::vector<double>>
     getClustersDescribingValues(const std::vector<std::vector<double>>& clusterCenters) const;
+
+    [[nodiscard]]
+    double
+    calculateRSquaredError(const std::vector<std::vector<double>>& rowsWithDescribingValues,
+                           const std::vector<double>& describedValues,
+                           const std::vector<double>& regressionCoefficients);
 };
 
 
