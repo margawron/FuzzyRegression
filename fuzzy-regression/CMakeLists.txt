@@ -2,7 +2,8 @@ add_executable(FuzzyRegression
         src/main.cpp
         src/datageneration/LinearRegressionDataGenerator.cpp
         src/streams/TupleWriter.cpp
-        src/regression/FuzzyRegression.cpp)
+        src/regression/FuzzyRegression.cpp
+        src/helper/Program.cpp)
 
 set_property(TARGET FuzzyRegression PROPERTY CXX_STANDARD 17)
 if (MSVC)
