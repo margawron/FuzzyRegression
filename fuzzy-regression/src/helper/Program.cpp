@@ -52,14 +52,18 @@ void Program::generateTestData() {
             1000.0);
 
     auto tupleWriter = TupleWriter(generatorForFiveDimensionalData, 1000);
+    std::filesystem::path dataPath("data");
+    if (!std::filesystem::exists(dataPath)){
+        std::filesystem::create_directories(dataPath);
+    }
     tupleWriter.generateTuplesAndSaveWithFilename(
-            std::filesystem::path("data/test1.txt")
+            dataPath/"test1.txt"
     );
     tupleWriter.generateTuplesAndSaveWithFilename(
-            std::filesystem::path("data/test2.txt")
+            dataPath/"test2.txt"
     );
     tupleWriter.generateTuplesAndSaveWithFilename(
-            std::filesystem::path("data/test3.txt")
+            dataPath/"test3.txt"
     );
 }
 
