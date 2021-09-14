@@ -9,9 +9,9 @@ epsilon(epsilon){}
 
 RegressionResult
 FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
-    performanceLoggingStream << "\n" << "Starting FCM for " << dataset.getNumberOfData()
-                             << " values with " << dataset.getNumberOfAttributes()
-                             << " attributes, " << numberOfClusters << " clusters\n";
+    performanceLoggingStream << dataset.getNumberOfData() << ";"
+                             << dataset.getNumberOfAttributes() << ";"
+                             << numberOfClusters << ";";
     ksi::fcm algorithm;
     algorithm.setEpsilonForFrobeniusNorm(epsilon);
     algorithm.setNumberOfClusters(numberOfClusters);
@@ -19,7 +19,7 @@ FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
     auto partition = algorithm.doPartition(dataset);
     auto fcmEnd = std::chrono::steady_clock::now();
     long fcmNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fcmEnd - fcmStart).count();
-    performanceLoggingStream << "Partitioning using FCM took " << fcmNanosecondDuration << " nanoseconds to complete\n";
+    performanceLoggingStream << fcmNanosecondDuration << ";";
 
     auto dataPrepStart = std::chrono::steady_clock::now();
     const std::vector<std::vector<double>> clusterCenters = partition.getClusterCentres();
@@ -29,20 +29,20 @@ FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
     auto dataPrepEnd = std::chrono::steady_clock::now();
 
     long dataPrepNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(dataPrepEnd - dataPrepStart).count();
-    performanceLoggingStream << "Data preparation took " << dataPrepNanosecondDuration << " nanoseconds to complete\n";
+    performanceLoggingStream << dataPrepNanosecondDuration << ";";
 
     auto fuzzyRegressionStart = std::chrono::steady_clock::now();
     const std::vector<double>& fuzzyRegressionCoefficients = ksi::least_square_error_regression::weighted_linear_regression(
             clusterDescribingValues, clusterDescribedValues, clusterWeights);
     auto fuzzyRegressionEnd = std::chrono::steady_clock::now();
     long fuzzyRegressionNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fuzzyRegressionEnd- fuzzyRegressionStart).count();
-    performanceLoggingStream << "Regression took " << fuzzyRegressionNanosecondDuration << " nanoseconds to complete\n";
+    performanceLoggingStream << fuzzyRegressionNanosecondDuration << ";";
 
     auto rSquaredErrorStart = std::chrono::steady_clock::now();
     double coefficientOfDetermination = calculateRSquaredError(clusterDescribingValues, clusterDescribedValues, fuzzyRegressionCoefficients);
     auto rSquaredErrorEnd = std::chrono::steady_clock::now();
     long rSquaredNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fuzzyRegressionEnd - fuzzyRegressionStart).count();
-    performanceLoggingStream << "Calculation of error took " << rSquaredNanosecondDuration << " nanoseconds to complete\n";
+    performanceLoggingStream << rSquaredNanosecondDuration << "\n";
 
     return RegressionResult{fuzzyRegressionCoefficients, coefficientOfDetermination};
 }

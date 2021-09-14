@@ -7,7 +7,8 @@
 #include "datageneration/LinearRegressionDataGenerator.hpp"
 
 Program::Program(int argument_count, char** argument_values)
-: arguments(generateArgumentSet(argument_count, argument_values)){}
+: arguments(generateArgumentSet(argument_count, argument_values)),
+MAX_PRECISION_COUT(std::setprecision(std::numeric_limits<long double>::digits10 + 1)){}
 
 int Program::run() {
     if (!arguments.empty()){
@@ -111,33 +112,67 @@ void Program::processSingleFile(const std::filesystem::directory_entry& testData
         std::cout << strerror(errno) << "\n";
         return;
     }
+    printPerformanceFileHeader(performanceFile);
     ksi::reader_complete input;
     auto dataset = input.read(testDataDirectoryEntry.path());
     // for 1000 datums with 5 describing values this took processing from 1 to about 70 clusters with 5 increment
     // took about 1-2 minutes, the bottleneck is FCM algorithm.doPartition(dataset)
-    int MAX_CLUSTERS_AMOUNT = 100;
+    const int MAX_CLUSTERS_AMOUNT = 50;
+
+    const std::string filename = testFileStem + "_results.txt";
+    std::fstream regressionResultOutputFile((resultPath / filename).string(), std::ios::out);
+    if (!regressionResultOutputFile.is_open()){
+        std::cout << "Could not create file " << filename << "\n";
+        std::cout << strerror(errno) << "\n";
+        return;
+    }
+    printRegressionDataHeader(regressionResultOutputFile, dataset.getNumberOfAttributes());
+
     unsigned long maxNumberOfClusters = dataset.getNumberOfData() < MAX_CLUSTERS_AMOUNT ? dataset.getNumberOfData() : MAX_CLUSTERS_AMOUNT;
-    for (int clusterSizeForIteration = 1; clusterSizeForIteration < maxNumberOfClusters; clusterSizeForIteration += 2) {
+    for (int clusterSizeForIteration = 2; clusterSizeForIteration < maxNumberOfClusters; ++clusterSizeForIteration) {
 
         auto fuzzyRegression = FuzzyRegression(dataset, clusterSizeForIteration);
         auto regressionResults = fuzzyRegression.processDataset(performanceFile);
 
-        const std::string filename = testFileStem + "_" + std::to_string(clusterSizeForIteration) + ".txt";
-        std::fstream regressionResultOutputFile((resultPath / filename).string(), std::ios::out);
-        if (!regressionResultOutputFile.is_open()){
-            std::cout << "Could not create file " << filename << "\n";
-            std::cout << strerror(errno) << "\n";
-            return;
-        }
-        regressionResultOutputFile << "Got following results for regression with " << clusterSizeForIteration << " clusters\n";
-        auto regressionCoefficients = regressionResults.regressionDescribingParameters;
-        for (int i = 0; i < regressionCoefficients.size(); ++i) {
-            regressionResultOutputFile << "x" << i+1 << " = " << regressionCoefficients[i] << " ";
-        }
-        regressionResultOutputFile << "\n";
-        regressionResultOutputFile << "R-squared error: " << regressionResults.coefficientOfDetermination;
-        regressionResultOutputFile.close();
+        printRegressionData(regressionResultOutputFile, clusterSizeForIteration, regressionResults);
     }
+    regressionResultOutputFile.close();
     performanceFile.close();
 }
 
+void Program::prettyPrintRegressionData(std::fstream& outputFile,
+                                        int clusterSizeForIteration,
+                                        const RegressionResult& regressionResults) const {
+    outputFile << "Got following results for regression with " << clusterSizeForIteration << " clusters\n";
+    auto regressionCoefficients = regressionResults.regressionDescribingParameters;
+    for (int i = 0; i < regressionCoefficients.size(); ++i) {
+        outputFile << "x" << i + 1 << " = " << MAX_PRECISION_COUT << regressionCoefficients[i] << " ";
+    }
+    outputFile << "\n";
+    outputFile << "R-squared error: " << MAX_PRECISION_COUT << regressionResults.coefficientOfDetermination;
+}
+
+void Program::printRegressionDataHeader(std::fstream& outputFile, unsigned long numberOfAttributes) const {
+    outputFile << "Cluster size" << ";";
+    for (int i = 0; i < numberOfAttributes-1; ++i) {
+        outputFile << "X" << i+1 << ";";
+    }
+    outputFile << "R-Squared" << "\n";
+}
+
+void Program::printRegressionData(std::fstream& outputFile,
+                                  int clusterSizeForIteration,
+                                  const RegressionResult& regressionResults) const {
+    outputFile << clusterSizeForIteration << ";";
+    auto regressionCoefficients = regressionResults.regressionDescribingParameters;
+    for (double regressionCoefficient : regressionCoefficients) {
+        outputFile << MAX_PRECISION_COUT << regressionCoefficient << ";";
+    }
+    outputFile << MAX_PRECISION_COUT << regressionResults.coefficientOfDetermination << std::endl;
+}
+
+void Program::printPerformanceFileHeader(std::fstream& performanceFile) {
+    performanceFile << "Number of Data;" << "Number of attributes;" << "Number of clusters;";
+    performanceFile << "FCM duration;" << "Data preparation duration;" << "Regression duration;" << "Error calculation duration" << "\n";
+
+}
