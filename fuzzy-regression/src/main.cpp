@@ -113,6 +113,15 @@ std::string printTime(const std::tm* timeStruct) {
 
 void processSingleFile(const std::filesystem::directory_entry& testDataDirectoryEntry,
                        const std::filesystem::path& resultPath) {
+    const std::string& testFileStem = testDataDirectoryEntry.path().stem().string();
+    const std::string performanceFileName = testFileStem + "_perf.txt";
+    std::fstream performanceFile(resultPath / performanceFileName, std::ios::out);
+    if (!performanceFile.is_open()){
+        std::cout << "Could not create performance file for " << testDataDirectoryEntry.path().string() << "\n";
+        std::cout << "Aborting processing of this file\n";
+        std::cout << strerror(errno) << "\n";
+        return;
+    }
     ksi::reader_complete input;
     auto dataset = input.read(testDataDirectoryEntry.path());
     // for 1000 datums with 5 describing values this took processing from 1 to about 70 clusters with 5 increment
@@ -122,9 +131,9 @@ void processSingleFile(const std::filesystem::directory_entry& testDataDirectory
     for (int clusterSizeForIteration = 1; clusterSizeForIteration < maxNumberOfClusters; clusterSizeForIteration += 2) {
 
         auto fuzzyRegression = FuzzyRegression(dataset, clusterSizeForIteration);
-        auto regressionResults = fuzzyRegression.processDataset();
+        auto regressionResults = fuzzyRegression.processDataset(performanceFile);
 
-        const std::string filename = testDataDirectoryEntry.path().stem().string() + "_" + std::to_string(clusterSizeForIteration) + ".txt";
+        const std::string filename = testFileStem + "_" + std::to_string(clusterSizeForIteration) + ".txt";
         std::fstream regressionResultOutputFile((resultPath / filename).string(), std::ios::out);
         if (!regressionResultOutputFile.is_open()){
             std::cout << "Could not create file " << filename << "\n";
@@ -137,4 +146,5 @@ void processSingleFile(const std::filesystem::directory_entry& testDataDirectory
         }
         regressionResultOutputFile.close();
     }
+    performanceFile.close();
 }

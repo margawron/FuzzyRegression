@@ -20,20 +20,26 @@ private:
     const int numberOfClusters;
     const double epsilon = epsilon;
 public:
-    explicit FuzzyRegression(const ksi::dataset& dataset,
-                             int numberOfClusters,
-                             double epsilon = EPSILON_DEFAULT_VALUE);
-    std::vector<double> processDataset();
+    FuzzyRegression(const ksi::dataset& dataset,
+                    int numberOfClusters,
+                    double epsilon = EPSILON_DEFAULT_VALUE);
+
+    std::vector<double> processDataset(std::ostream& performanceLoggingStream);
 
 private:
     [[nodiscard]]
-    std::vector<AssociationStruct> getPartitionAssociativityData(const std::vector<std::vector<double>>& partitionMatrix) const;
+    std::vector<AssociationStruct>
+    getPartitionAssociativityData(const std::vector<std::vector<double>>& partitionMatrix) const;
 
     [[nodiscard]]
-    std::vector<double> getClusterWeightsFromPartition(const ksi::partition& partition) const;
+    std::vector<double>
+    getClusterWeightsFromPartition(const ksi::partition& partition) const;
 
-    std::vector<double> getClustersDescribedValue(const std::vector<std::vector<double>>& clusterCenters) const;
+    [[nodiscard]]
+    std::vector<double>
+    getClustersDescribedValue(const std::vector<std::vector<double>>& clusterCenters) const;
 
+    [[nodiscard]]
     std::vector<std::vector<double>>
     getClustersDescribingValues(const std::vector<std::vector<double>>& clusterCenters) const;
 };

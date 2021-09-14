@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "regression/FuzzyRegression.hpp"
 
 FuzzyRegression::FuzzyRegression(const ksi::dataset& dataset, int numberOfClusters, double epsilon)
@@ -6,27 +8,43 @@ numberOfClusters(numberOfClusters),
 epsilon(epsilon){}
 
 std::vector<double>
-FuzzyRegression::processDataset(const std::ostream&  ) {
+FuzzyRegression::processDataset(std::ostream& performanceLoggingStream) {
+    performanceLoggingStream << "\n" << "Starting FCM for " << dataset.getNumberOfData()
+                             << " values with " << dataset.getNumberOfAttributes()
+                             << " attributes, " << numberOfClusters << " clusters\n";
     ksi::fcm algorithm;
     algorithm.setEpsilonForFrobeniusNorm(epsilon);
     algorithm.setNumberOfClusters(numberOfClusters);
+    auto fcmStart = std::chrono::steady_clock::now();
     auto partition = algorithm.doPartition(dataset);
+    auto fcmEnd = std::chrono::steady_clock::now();
+    long fcmNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fcmEnd - fcmStart).count();
+    performanceLoggingStream << "Partitioning using FCM took " << fcmNanosecondDuration << " nanoseconds to complete\n";
 
+    auto dataPrepStart = std::chrono::steady_clock::now();
     const std::vector<std::vector<double>> clusterCenters = partition.getClusterCentres();
     std::vector<double> clusterDescribedValues = getClustersDescribedValue(clusterCenters);
     std::vector<std::vector<double>> clusterDescribingValues = getClustersDescribingValues(clusterCenters);
     const std::vector<double> clusterWeights = getClusterWeightsFromPartition(partition);
+    auto dataPrepEnd = std::chrono::steady_clock::now();
 
+    long dataPrepNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(dataPrepEnd - dataPrepStart).count();
+    performanceLoggingStream << "Data preparation took " << dataPrepNanosecondDuration << " nanoseconds to complete\n";
 
+    auto fuzzyRegressionStart = std::chrono::steady_clock::now();
     const std::vector<double>& fuzzyWeightedLinearRegressionResults = ksi::least_square_error_regression::weighted_linear_regression(
             clusterDescribingValues, clusterDescribedValues, clusterWeights);
+    auto fuzzyRegressionEnd = std::chrono::steady_clock::now();
+    long fuzzyRegressionNanosecondDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(fuzzyRegressionEnd- fuzzyRegressionStart).count();
+    performanceLoggingStream << "Regression took " << fuzzyRegressionNanosecondDuration << " nanoseconds to complete\n";
+
     return fuzzyWeightedLinearRegressionResults;
 }
 
 std::vector<std::vector<double>>
 FuzzyRegression::getClustersDescribingValues(const std::vector<std::vector<double>>& clusterCenters) const {
     std::vector<std::vector<double>> clusterDescribingValues;
-    clusterDescribingValues.reserve(clusterCenters.size());
+    clusterDescribingValues.reserve(numberOfClusters);
     for (const auto & singleClusterParameters : clusterCenters) {
         std::vector<double> singleClusterDescribingValues;
         unsigned long numberOfDescribingValuesInTuple = singleClusterParameters.size() - 1;
