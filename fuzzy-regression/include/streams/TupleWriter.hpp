@@ -9,10 +9,10 @@
 class TupleWriter{
 private:
     LinearRegressionDataGenerator& dataGenerator;
-    const unsigned int numberOfValuesToGenerate;
+    const unsigned int numberOfTuplesToGenerate;
 public:
     TupleWriter(LinearRegressionDataGenerator& dataGenerator,
-                unsigned int numberOfValuesToGenerate) noexcept;
+                unsigned int numberOfTuplesToGenerate) noexcept;
 
     void generateTuplesAndSaveWithFilename(const std::filesystem::path&& outputPath);
 };

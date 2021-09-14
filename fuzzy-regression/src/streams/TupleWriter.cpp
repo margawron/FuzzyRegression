@@ -4,9 +4,9 @@
 #include <iostream>
 
 TupleWriter::TupleWriter(LinearRegressionDataGenerator& dataGenerator,
-                         const unsigned int numberOfValuesToGenerate) noexcept
+                         const unsigned int numberOfTuplesToGenerate) noexcept
                          : dataGenerator(dataGenerator),
-                         numberOfValuesToGenerate(numberOfValuesToGenerate){}
+                           numberOfTuplesToGenerate(numberOfTuplesToGenerate){}
 
 void TupleWriter::generateTuplesAndSaveWithFilename(const std::filesystem::path&& outputPath) {
     std::ofstream outputFile(outputPath);
@@ -14,7 +14,7 @@ void TupleWriter::generateTuplesAndSaveWithFilename(const std::filesystem::path&
         std::cout << "File was not opened correctly";
         throw "File was not opened correctly";
     }
-    for (int i = 0; i < numberOfValuesToGenerate; ++i) {
+    for (int i = 0; i < numberOfTuplesToGenerate; ++i) {
         auto tuple = dataGenerator.generateTupleValue();
         for (const auto &item : tuple){
             outputFile << item << " ";
