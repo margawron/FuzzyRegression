@@ -1,7 +1,7 @@
 #ifndef FUZZY_REGRESSION_TUPLEWRITER_HPP
 #define FUZZY_REGRESSION_TUPLEWRITER_HPP
 
-#include "LinearRegressionDataGenerator.hpp"
+#include "datageneration/LinearRegressionDataGenerator.hpp"
 
 #include <fstream>
 #include <filesystem>

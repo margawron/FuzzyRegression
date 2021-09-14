@@ -7,9 +7,9 @@
 
 #include <readers/reader-complete.h>
 
-#include <LinearRegressionDataGenerator.hpp>
-#include <TupleWriter.hpp>
-#include <FuzzyRegression.hpp>
+#include <datageneration/LinearRegressionDataGenerator.hpp>
+#include <streams/TupleWriter.hpp>
+#include <regression/FuzzyRegression.hpp>
 #include <cstring>
 
 
@@ -62,7 +62,7 @@ void runMainProgram(const std::unordered_set<std::string>& arguments) {
 void generateTestData() {
     auto generatorForFiveDimensionalData = LinearRegressionDataGenerator(
             std::vector<double>(std::initializer_list<double> {5.0, 3.0, 4.0, 5.0, 3.0}),
-            std::vector<double>(std::initializer_list<double> {0.1, 0.3, 0.4, 0.5, 0.3}),
+            std::vector<double>(std::initializer_list<double> {0.001, 0.003, 0.004, 0.005, 0.003}),
             2.0,
             1000.0);
 
@@ -115,19 +115,23 @@ void processSingleFile(const std::filesystem::directory_entry& testDataDirectory
                        const std::filesystem::path& resultPath) {
     ksi::reader_complete input;
     auto dataset = input.read(testDataDirectoryEntry.path());
-    size_t numberOfData = dataset.getNumberOfData();
-    for (int clusterSizeIteration = 0; clusterSizeIteration < numberOfData; clusterSizeIteration += 5) {
-        auto fuzzyRegression = FuzzyRegression(dataset, 2);
-        auto regressionResults = fuzzyRegression.processDataset();
-        const std::string filename = testDataDirectoryEntry.path().stem().string() + "_" + std::to_string(clusterSizeIteration) + ".txt";
+    // for 1000 datums with 5 describing values this took processing from 1 to about 70 clusters with 5 increment
+    // took about 1-2 minutes, the bottleneck is FCM algorithm.doPartition(dataset)
+    int MAX_CLUSTERS_AMOUNT = 100;
+    unsigned long maxNumberOfClusters = dataset.getNumberOfData() < MAX_CLUSTERS_AMOUNT ? dataset.getNumberOfData() : MAX_CLUSTERS_AMOUNT;
+    for (int clusterSizeForIteration = 1; clusterSizeForIteration < maxNumberOfClusters; clusterSizeForIteration += 2) {
 
+        auto fuzzyRegression = FuzzyRegression(dataset, clusterSizeForIteration);
+        auto regressionResults = fuzzyRegression.processDataset();
+
+        const std::string filename = testDataDirectoryEntry.path().stem().string() + "_" + std::to_string(clusterSizeForIteration) + ".txt";
         std::fstream regressionResultOutputFile((resultPath / filename).string(), std::ios::out);
         if (!regressionResultOutputFile.is_open()){
             std::cout << "Could not create file " << filename << "\n";
             std::cout << strerror(errno) << "\n";
             return;
         }
-        regressionResultOutputFile << "Got following results for regression with " << clusterSizeIteration << " clusters\n";
+        regressionResultOutputFile << "Got following results for regression with " << clusterSizeForIteration << " clusters\n";
         for (int i = 0; i < regressionResults.size(); ++i) {
             regressionResultOutputFile << "x" << i+1 << " = " << regressionResults[i] << " ";
         }

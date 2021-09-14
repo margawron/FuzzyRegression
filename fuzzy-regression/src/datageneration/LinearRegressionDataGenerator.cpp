@@ -1,4 +1,4 @@
-#include "LinearRegressionDataGenerator.hpp"
+#include "datageneration/LinearRegressionDataGenerator.hpp"
 
 LinearRegressionDataGenerator::LinearRegressionDataGenerator(const std::vector<double> &&slopeParameters,
                                                              const std::vector<double> &&slopeDeviations,

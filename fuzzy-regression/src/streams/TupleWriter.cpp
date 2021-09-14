@@ -1,5 +1,5 @@
-#include <TupleWriter.hpp>
-#include <LinearRegressionDataGenerator.hpp>
+#include <streams/TupleWriter.hpp>
+#include <datageneration/LinearRegressionDataGenerator.hpp>
 
 #include <iostream>
 

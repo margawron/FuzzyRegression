@@ -1,4 +1,4 @@
-#include "FuzzyRegression.hpp"
+#include "regression/FuzzyRegression.hpp"
 
 FuzzyRegression::FuzzyRegression(const ksi::dataset& dataset, int numberOfClusters, double epsilon)
 : dataset(dataset),
@@ -6,7 +6,7 @@ numberOfClusters(numberOfClusters),
 epsilon(epsilon){}
 
 std::vector<double>
-FuzzyRegression::processDataset() {
+FuzzyRegression::processDataset(const std::ostream&  ) {
     ksi::fcm algorithm;
     algorithm.setEpsilonForFrobeniusNorm(epsilon);
     algorithm.setNumberOfClusters(numberOfClusters);
